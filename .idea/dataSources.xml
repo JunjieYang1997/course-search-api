@@ -11,5 +11,12 @@
         <property name="sslmode" value="require" />
       </driver-properties>
     </data-source>
+    <data-source source="LOCAL" name="postgres@elephantsql" uuid="b6e28d8d-bb4d-492f-8d8b-b9923e51b6f8">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://ziggy.db.elephantsql.com:5432/yjpaxwks</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
