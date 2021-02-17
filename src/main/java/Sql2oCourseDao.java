@@ -1,6 +1,9 @@
+import org.sql2o.Connection;
 import org.sql2o.Sql2o;
+import org.sql2o.Sql2oException;
 
 import java.util.List;
+import java.util.Locale;
 
 public class Sql2oCourseDao implements CourseDao {
 
@@ -19,31 +22,76 @@ public class Sql2oCourseDao implements CourseDao {
 
     @Override
     public Course create(String offeringName, String title) throws DaoException {
-        return null; // stub
+        String sql = "WITH inserted AS ("
+                + "INSERT INTO courses(offeringName, title) VALUES(:name, :title) RETURNING *"
+                + ") SELECT * FROM inserted;";
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addParameter("name", offeringName)
+                    .addParameter("title", title)
+                    .executeAndFetchFirst(Course.class);
+        } catch (Sql2oException ex) {
+            throw new DaoException(ex.getMessage(), ex);
+        }
     }
 
     @Override
     public Course read(String offeringName) throws DaoException {
-        return null; // stub
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery("SELECT * FROM courses WHERE offeringName = :name;")
+                    .addParameter("name", offeringName)
+                    .executeAndFetchFirst(Course.class);
+        } catch (Sql2oException ex) {
+            throw new DaoException("Unable to read a course with offeringName " + offeringName, ex);
+        }
     }
 
     @Override
     public List<Course> readAll() throws DaoException {
-        return null; // stub
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery("SELECT * FROM courses;").executeAndFetch(Course.class);
+        } catch (Sql2oException ex) {
+            throw new DaoException("Unable to read courses from the database", ex);
+        }
     }
 
     @Override
     public List<Course> readAll(String titleQuery) throws DaoException {
-        return null; // stub
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery("SELECT * FROM courses WHERE LOWER(title) LIKE Concat('%', :titleQuery, '%');")
+                    .addParameter("titleQuery", titleQuery.toLowerCase())
+                    .executeAndFetch(Course.class);
+        } catch (Sql2oException ex) {
+            throw new DaoException("Unable to read all the courses with title " + titleQuery, ex);
+        }
     }
 
     @Override
     public Course update(String offeringName, String title) throws DaoException {
-        return null; // stub
+        String sql = "WITH updated AS ("
+                + "UPDATE courses SET title = :title WHERE offeringName = :name RETURNING *"
+                + ") SELECT * FROM updated;";
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addParameter("title", title)
+                    .addParameter("name", offeringName)
+                    .executeAndFetchFirst(Course.class);
+        } catch (Sql2oException ex) {
+            throw new DaoException("Unable to update the course", ex);
+        }
     }
 
     @Override
     public Course delete(String offeringName) throws DaoException {
-        return null; // stub
+        String sql = "WITH deleted AS ("
+                + "DELETE FROM courses WHERE offeringName = :name RETURNING *"
+                + ") SELECT * FROM deleted;";
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addParameter("name", offeringName)
+                    .executeAndFetchFirst(Course.class);
+        } catch (Sql2oException ex) {
+            throw new DaoException("Unable to delete the course", ex);
+        }
     }
 }
